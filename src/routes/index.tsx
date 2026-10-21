@@ -28,7 +28,7 @@ const catStyle: Record<Cat, { icon: typeof Leaf; cls: string; name: string }> = 
 };
 
 type When = "overdue" | "today" | "soon" | "later";
-type Item = { id: number; title: string; due: string; when: When; cat: Cat; who: "A" | "S"; high?: boolean; done: boolean; doneAt?: string };
+type Item = { id: number; title: string; due: string; when: When; cat: Cat; who: "A" | "S"; high?: boolean; done: boolean; doneAt?: string | undefined };
 
 const initialItems: Item[] = [
   { id: 1, title: "Water the monstera", due: "Today", when: "today", cat: "plant", who: "A", done: true, doneAt: "8:10 am" },
