@@ -20,24 +20,34 @@ export const Route = createFileRoute("/")({
 });
 
 type Cat = "plant" | "grocery" | "clean" | "bill";
-const catStyle: Record<Cat, { icon: typeof Leaf; cls: string }> = {
-  plant: { icon: Leaf, cls: "bg-cat-plant text-cat-plant-fg" },
-  grocery: { icon: ShoppingBasket, cls: "bg-cat-grocery text-cat-grocery-fg" },
-  clean: { icon: Sparkles, cls: "bg-cat-clean text-cat-clean-fg" },
-  bill: { icon: Receipt, cls: "bg-cat-bill text-cat-bill-fg" },
+const catStyle: Record<Cat, { icon: typeof Leaf; cls: string; name: string }> = {
+  plant: { icon: Leaf, cls: "bg-cat-plant text-cat-plant-fg", name: "Plants" },
+  grocery: { icon: ShoppingBasket, cls: "bg-cat-grocery text-cat-grocery-fg", name: "Groceries" },
+  clean: { icon: Sparkles, cls: "bg-cat-clean text-cat-clean-fg", name: "Cleaning" },
+  bill: { icon: Receipt, cls: "bg-cat-bill text-cat-bill-fg", name: "Bills" },
 };
 
-const initialTasks = [
-  { id: 1, title: "Water the monstera", due: "Today", cat: "plant" as Cat, done: true, who: "A" },
-  { id: 2, title: "Pick up groceries", due: "Today, 6 pm", cat: "grocery" as Cat, done: false, who: "S" },
-  { id: 3, title: "Clean the kitchen", due: "Today", cat: "clean" as Cat, done: true, who: "A" },
-  { id: 4, title: "Pay electricity bill", due: "Tomorrow", cat: "bill" as Cat, done: false, who: "A" },
-  { id: 5, title: "Repot the fiddle leaf", due: "Sat", cat: "plant" as Cat, done: false, who: "S" },
+type When = "overdue" | "today" | "soon" | "later";
+type Item = { id: number; title: string; due: string; when: When; cat: Cat; who: "A" | "S"; high?: boolean; done: boolean; doneAt?: string };
+
+const initialItems: Item[] = [
+  { id: 1, title: "Water the monstera", due: "Today", when: "today", cat: "plant", who: "A", done: true, doneAt: "8:10 am" },
+  { id: 2, title: "Pick up groceries", due: "Today, 6 pm", when: "today", cat: "grocery", who: "S", high: true, done: false },
+  { id: 3, title: "Clean the kitchen", due: "Today", when: "today", cat: "clean", who: "A", done: true, doneAt: "9:40 am" },
+  { id: 4, title: "Electricity bill · £64.20", due: "Due yesterday", when: "overdue", cat: "bill", who: "A", done: false },
+  { id: 5, title: "Take out recycling", due: "Today, 8 pm", when: "today", cat: "clean", who: "S", done: false },
+  { id: 6, title: "Internet bill · £32.00", due: "Tomorrow", when: "soon", cat: "bill", who: "A", high: true, done: false },
+  { id: 7, title: "Repot the fiddle leaf", due: "Sat", when: "later", cat: "plant", who: "S", done: false },
+  { id: 8, title: "Deep clean bathroom", due: "Sun", when: "later", cat: "clean", who: "A", done: false },
 ];
 
-function Avatar({ l, tone }: { l: string; tone: "a" | "b" }) {
+const whenRank: Record<When, number> = { overdue: 0, today: 2, soon: 3, later: 4 };
+const score = (i: Item) => (i.when === "overdue" ? 0 : i.high && i.when !== "later" ? 1 : whenRank[i.when]) * 10 + (i.high ? 0 : 1);
+const who = (w: "A" | "S") => (w === "A" ? "You" : "Sam");
+
+function Avatar({ l, tone, size = "md" }: { l: string; tone: "a" | "b"; size?: "sm" | "md" }) {
   return (
-    <span className={`grid h-8 w-8 place-items-center rounded-full text-xs font-semibold ring-2 ring-background ${tone === "a" ? "bg-primary text-primary-foreground" : "bg-cat-grocery text-cat-grocery-fg"}`}>
+    <span className={`grid place-items-center rounded-full font-semibold ring-2 ring-background ${size === "sm" ? "h-5 w-5 text-[9px]" : "h-8 w-8 text-xs"} ${tone === "a" ? "bg-primary text-primary-foreground" : "bg-cat-grocery text-cat-grocery-fg"}`}>
       {l}
     </span>
   );
@@ -46,142 +56,187 @@ function Avatar({ l, tone }: { l: string; tone: "a" | "b" }) {
 function SectionHead({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between px-1">
-      <h2 className="text-[19px] font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-[17px] font-semibold tracking-tight">{title}</h2>
       {action}
     </div>
   );
 }
 
-function Dashboard() {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [sheet, setSheet] = useState(false);
-  const done = tasks.filter((t) => t.done).length;
-  const pct = (done / tasks.length) * 100;
-  const msg = done === tasks.length ? "Everything's done. Enjoy your evening." : done >= 3 ? "Nearly there — lovely work today." : "A calm start. One thing at a time.";
+function AttentionCard({ item, onDone }: { item: Item; onDone: () => void }) {
+  const C = catStyle[item.cat];
+  const overdue = item.when === "overdue";
+  const isBill = item.cat === "bill";
+  const label = overdue ? "Overdue" : item.when === "today" ? "Today" : "Soon";
+  return (
+    <li className={`flex items-center gap-3 rounded-2xl p-4 shadow-card transition-all ${overdue ? "bg-urgent" : "bg-card"}`}>
+      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${C.cls}`}><C.icon className="h-[18px] w-[18px]" /></span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${overdue ? "bg-urgent-fg/10 text-urgent-fg" : item.when === "today" ? "bg-primary-soft text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{label}</span>
+          {item.high && <span className="text-[10px] font-semibold uppercase tracking-wider text-urgent-fg">· High</span>}
+        </div>
+        <p className="mt-1 truncate text-[15px] font-semibold">{item.title}</p>
+        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className={overdue ? "text-urgent-fg" : ""}>{item.due}</span> · {C.name} · <Avatar l={item.who} tone={item.who === "A" ? "a" : "b"} size="sm" /> {who(item.who)}
+        </p>
+      </div>
+      {isBill ? (
+        <button onClick={onDone} className="shrink-0 rounded-full bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground active:scale-95 transition-transform">Mark paid</button>
+      ) : (
+        <button onClick={onDone} aria-label={`Complete ${item.title}`} className="grid h-11 w-11 shrink-0 place-items-center rounded-full active:scale-90 transition-transform">
+          <span className="grid h-7 w-7 place-items-center rounded-full border-2 border-muted-foreground/40 hover:border-primary"><Check className="h-3.5 w-3.5 text-transparent" strokeWidth={3} /></span>
+        </button>
+      )}
+    </li>
+  );
+}
 
-  const toggle = (id: number) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+function Dashboard() {
+  const [items, setItems] = useState(initialItems);
+  const [sheet, setSheet] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const [showDone, setShowDone] = useState(false);
+
+  const todayScope = items.filter((i) => i.when !== "later" || i.done);
+  const doneToday = items.filter((i) => i.done);
+  const attention = items.filter((i) => !i.done && i.when !== "later").sort((a, b) => score(a) - score(b));
+  const later = items.filter((i) => !i.done && i.when === "later");
+  const visible = showAll ? attention : attention.slice(0, 3);
+  const total = todayScope.length;
+  const pct = total ? (doneToday.length / total) * 100 : 0;
+
+  const complete = (id: number) => setItems((xs) => xs.map((x) => (x.id === id ? { ...x, done: true, doneAt: "Just now" } : x)));
+  const undo = (id: number) => setItems((xs) => xs.map((x) => (x.id === id ? { ...x, done: false, doneAt: undefined } : x)));
 
   return (
     <div className="min-h-screen bg-secondary">
       <div className="relative mx-auto min-h-screen max-w-[430px] bg-background">
         <main className="no-scrollbar px-5 pb-36 pt-[max(env(safe-area-inset-top),3.25rem)]">
-          {/* Header */}
           <header className="flex items-start justify-between">
             <div>
               <p className="text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Wednesday, 21 October</p>
-              <h1 className="mt-1 text-[30px] font-bold leading-tight tracking-tight">Good morning, Alex</h1>
-              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-accent-foreground">
-                <Home className="h-3 w-3" /> Our Home
-              </span>
+              <h1 className="mt-1 text-[28px] font-bold leading-tight tracking-tight">Good morning, Alex</h1>
             </div>
             <div className="flex items-center gap-3 pt-1">
               <button aria-label="Notifications" className="relative grid h-10 w-10 place-items-center rounded-full bg-card shadow-card">
                 <Bell className="h-[18px] w-[18px]" />
-                <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-cat-bill-fg ring-2 ring-card" />
+                {attention.some((a) => a.when === "overdue") && <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-urgent-fg ring-2 ring-card" />}
               </button>
               <div className="flex -space-x-2"><Avatar l="A" tone="a" /><Avatar l="S" tone="b" /></div>
             </div>
           </header>
 
-          {/* Summary */}
-          <section className="relative mt-7 overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground shadow-fab">
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary-foreground/10" />
-            <div className="absolute -bottom-16 right-12 h-32 w-32 rounded-full bg-primary-foreground/5" />
-            <p className="text-sm font-medium opacity-80">Today</p>
-            <p className="mt-1 text-[28px] font-semibold tracking-tight">
-              {done} of {tasks.length} <span className="font-normal opacity-80">tasks completed</span>
-            </p>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-primary-foreground/20">
-              <div className="h-full rounded-full bg-primary-foreground transition-all duration-500" style={{ width: `${pct}%` }} />
+          {/* Compact progress strip */}
+          <div className="mt-4 flex items-center gap-3 rounded-full bg-primary-soft px-4 py-2.5">
+            <Home className="h-3.5 w-3.5 text-accent-foreground" />
+            <p className="text-xs font-medium text-accent-foreground"><span className="font-semibold">{doneToday.length} of {total}</span> completed today</p>
+            <div className="ml-auto h-1.5 w-20 overflow-hidden rounded-full bg-primary/15">
+              <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
             </div>
-            <p className="mt-3 text-sm opacity-90">{msg}</p>
+          </div>
+
+          {/* Needs your attention */}
+          <section className="mt-7">
+            <SectionHead
+              title="Needs your attention"
+              action={attention.length > 3 && (
+                <button onClick={() => setShowAll((s) => !s)} className="flex items-center text-sm font-medium text-primary">
+                  {showAll ? "Show less" : `View all ${attention.length}`} <ChevronRight className={`h-4 w-4 transition-transform ${showAll ? "-rotate-90" : ""}`} />
+                </button>
+              )}
+            />
+            {attention.length === 0 ? (
+              <div className="rounded-3xl bg-card p-7 text-center shadow-card">
+                <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-primary"><Check className="h-6 w-6" strokeWidth={2.5} /></span>
+                <p className="mt-4 text-[17px] font-semibold">Nothing urgent right now</p>
+                <p className="mt-1 text-sm text-muted-foreground">You're all caught up. Enjoy the calm.</p>
+                {later.length > 0 && (
+                  <a href="#later" className="mt-4 inline-flex items-center rounded-full bg-primary-soft px-4 py-2 text-sm font-medium text-accent-foreground">View upcoming <ChevronRight className="h-4 w-4" /></a>
+                )}
+              </div>
+            ) : (
+              <ul className="space-y-2.5">
+                {visible.map((i) => <AttentionCard key={i.id} item={i} onDone={() => complete(i.id)} />)}
+              </ul>
+            )}
+
+            {doneToday.length > 0 && (
+              <div className="mt-3">
+                <button onClick={() => setShowDone((s) => !s)} className="flex w-full items-center gap-2 px-1 py-2 text-sm text-muted-foreground">
+                  <span className="grid h-5 w-5 place-items-center rounded-full bg-primary"><Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} /></span>
+                  Completed today · {doneToday.length}
+                  <ChevronRight className={`ml-auto h-4 w-4 transition-transform ${showDone ? "rotate-90" : ""}`} />
+                </button>
+                {showDone && (
+                  <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-card">
+                    {doneToday.map((i) => (
+                      <li key={i.id} className="flex items-center gap-3 px-4 py-3">
+                        <span className="flex-1 truncate text-sm text-muted-foreground line-through">{i.title}</span>
+                        <span className="text-xs text-muted-foreground">{who(i.who)} · {i.doneAt}</span>
+                        <button onClick={() => undo(i.id)} className="text-xs font-medium text-primary">Undo</button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </section>
 
-          {/* Coming up */}
-          <section className="mt-9">
-            <SectionHead title="Coming Up" action={<button className="flex items-center text-sm font-medium text-primary">See all <ChevronRight className="h-4 w-4" /></button>} />
-            <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-card">
-              {tasks.map((t) => {
-                const C = catStyle[t.cat];
-                return (
-                  <li key={t.id}>
-                    <button onClick={() => toggle(t.id)} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left active:bg-muted">
-                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition-all ${t.done ? "border-primary bg-primary" : "border-muted-foreground/40"}`}>
-                        {t.done && <Check className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={3} />}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className={`block truncate text-[15px] font-medium transition-colors ${t.done ? "text-muted-foreground line-through" : ""}`}>{t.title}</span>
-                        <span className={`text-xs ${t.due.startsWith("Today") && !t.done ? "text-primary" : "text-muted-foreground"}`}>{t.due}</span>
-                      </span>
-                      <span className={`grid h-8 w-8 place-items-center rounded-xl ${C.cls}`}><C.icon className="h-4 w-4" /></span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+          {/* Coming up later */}
+          {later.length > 0 && (
+            <section id="later" className="mt-7">
+              <SectionHead title="Coming up later" />
+              <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-card">
+                {later.map((i) => {
+                  const C = catStyle[i.cat];
+                  return (
+                    <li key={i.id} className="flex items-center gap-3 px-4 py-3">
+                      <button onClick={() => complete(i.id)} aria-label={`Complete ${i.title}`} className="grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 border-muted-foreground/40" />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{i.title}</span>
+                      <span className="text-xs text-muted-foreground">{i.due} · {who(i.who)}</span>
+                      <C.icon className={`h-4 w-4 ${C.cls.split(" ")[1]}`} />
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
 
           {/* Keep in mind */}
-          <section className="mt-9">
-            <SectionHead title="Keep in Mind" action={<button aria-label="Add note" className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-primary"><Plus className="h-4 w-4" /></button>} />
+          <section className="mt-7">
+            <SectionHead title="Keep in mind" action={<button aria-label="Add note" onClick={() => setSheet(true)} className="grid h-8 w-8 place-items-center rounded-full bg-primary-soft text-primary"><Plus className="h-4 w-4" /></button>} />
             <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
-              <div className="relative w-44 shrink-0 rounded-2xl bg-note p-4 shadow-card">
-                <Pin className="absolute right-3 top-3 h-3.5 w-3.5 rotate-45 fill-current text-note-fg" />
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-note-fg">Pinned</p>
-                <p className="mt-2 text-[15px] font-medium leading-snug">Spare keys are in the kitchen drawer</p>
-                <p className="mt-3 text-xs text-muted-foreground">Sam · 2d</p>
-              </div>
-              <div className="w-44 shrink-0 rounded-2xl bg-card p-4 shadow-card">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Reminder</p>
-                <p className="mt-2 text-[15px] font-medium leading-snug">Order dishwasher tablets</p>
-                <p className="mt-3 text-xs text-muted-foreground">Alex · 5h</p>
-              </div>
-              <div className="w-44 shrink-0 rounded-2xl bg-card p-4 shadow-card">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Wi‑Fi</p>
-                <p className="mt-2 text-[15px] font-medium leading-snug">Guest password on the fridge</p>
-                <p className="mt-3 text-xs text-muted-foreground">Alex · 1w</p>
-              </div>
+              {[
+                ["Pinned", "Spare keys are in the kitchen drawer", "Sam · 2d", true],
+                ["Reminder", "Order dishwasher tablets", "Alex · 5h", false],
+                ["Wi‑Fi", "Guest password on the fridge", "Alex · 1w", false],
+              ].map(([t, b, m, pin]) => (
+                <div key={t as string} className={`relative w-40 shrink-0 rounded-2xl p-3.5 shadow-card ${pin ? "bg-note" : "bg-card"}`}>
+                  {pin && <Pin className="absolute right-3 top-3 h-3.5 w-3.5 rotate-45 fill-current text-note-fg" />}
+                  <p className={`text-[10px] font-semibold uppercase tracking-wider ${pin ? "text-note-fg" : "text-muted-foreground"}`}>{t}</p>
+                  <p className="mt-1.5 text-sm font-medium leading-snug">{b}</p>
+                  <p className="mt-2 text-[11px] text-muted-foreground">{m}</p>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Around your home */}
-          <section className="mt-9">
-            <SectionHead title="Around Your Home" />
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                ["grocery", "Groceries", "7 items"],
-                ["plant", "Plants", "2 need watering"],
-                ["bill", "Bills", "1 due soon"],
-                ["clean", "Cleaning", "3 upcoming"],
-              ] as [Cat, string, string][]).map(([c, name, count]) => {
+          {/* Around your home — compact */}
+          <section className="mt-7">
+            <SectionHead title="Around your home" />
+            <div className="grid grid-cols-4 gap-2">
+              {(["grocery", "plant", "bill", "clean"] as Cat[]).map((c) => {
                 const C = catStyle[c];
+                const n = items.filter((i) => i.cat === c && !i.done).length;
                 return (
-                  <button key={name} className="rounded-2xl bg-card p-4 text-left shadow-card active:scale-[0.98] transition-transform">
-                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${C.cls}`}><C.icon className="h-5 w-5" /></span>
-                    <p className="mt-3 text-[15px] font-semibold">{name}</p>
-                    <p className="text-xs text-muted-foreground">{count}</p>
+                  <button key={c} className="flex flex-col items-center gap-1.5 rounded-2xl bg-card py-3 shadow-card active:scale-95 transition-transform">
+                    <span className={`grid h-9 w-9 place-items-center rounded-xl ${C.cls}`}><C.icon className="h-4 w-4" /></span>
+                    <span className="text-[11px] font-medium">{C.name}</span>
+                    <span className="text-[10px] text-muted-foreground">{n} open</span>
                   </button>
                 );
               })}
             </div>
-          </section>
-
-          {/* Activity */}
-          <section className="mt-9">
-            <SectionHead title="Recent Activity" />
-            <ul className="space-y-4 px-1">
-              {[
-                ["S", "b", "Sam", "added oat milk to Groceries", "12m"],
-                ["A", "a", "You", "completed Clean the kitchen", "1h"],
-                ["S", "b", "Sam", "pinned a note", "2d"],
-              ].map(([l, tone, who, what, when], i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <Avatar l={l ?? ""} tone={tone as "a" | "b"} />
-                  <p className="flex-1 text-sm text-muted-foreground"><span className="font-semibold text-foreground">{who}</span> {what}</p>
-                  <span className="text-xs text-muted-foreground">{when}</span>
-                </li>
-              ))}
-            </ul>
           </section>
         </main>
 
