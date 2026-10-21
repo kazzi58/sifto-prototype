@@ -42,6 +42,8 @@
   --color-cat-bill-fg: var(--cat-bill-fg);
   --color-note: var(--note);
   --color-note-fg: var(--note-fg);
+  --color-urgent: var(--urgent);
+  --color-urgent-fg: var(--urgent-fg);
   --shadow-card: 0 1px 2px oklch(0.3 0.02 150 / 0.04), 0 6px 20px -8px oklch(0.3 0.02 150 / 0.10);
   --shadow-fab: 0 10px 24px -6px oklch(0.45 0.06 155 / 0.5);
 }
@@ -78,6 +80,8 @@
   --cat-bill-fg: oklch(0.55 0.11 25);
   --note: oklch(0.97 0.04 95);
   --note-fg: oklch(0.45 0.07 80);
+  --urgent: oklch(0.965 0.022 30);
+  --urgent-fg: oklch(0.55 0.11 28);
 }
 
 @layer base {
