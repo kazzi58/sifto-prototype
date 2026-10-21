@@ -176,7 +176,7 @@ function Dashboard() {
                 ["S", "b", "Sam", "pinned a note", "2d"],
               ].map(([l, tone, who, what, when], i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <Avatar l={l} tone={tone as "a" | "b"} />
+                  <Avatar l={l ?? ""} tone={tone as "a" | "b"} />
                   <p className="flex-1 text-sm text-muted-foreground"><span className="font-semibold text-foreground">{who}</span> {what}</p>
                   <span className="text-xs text-muted-foreground">{when}</span>
                 </li>
