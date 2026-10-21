@@ -8,7 +8,7 @@ type F = "mine" | "everyone" | "today" | "upcoming";
 const filters: [F, string][] = [["mine", "Mine"], ["everyone", "Everyone"], ["today", "Today"], ["upcoming", "Upcoming"]];
 
 export const Route = createFileRoute("/tasks")({
-  validateSearch: (s: Record<string, unknown>): { f?: F } => ({ f: filters.some(([k]) => k === s.f) ? (s.f as F) : undefined }),
+  validateSearch: (s: Record<string, unknown>): { f?: F | undefined } => ({ f: filters.some(([k]) => k === s["f"]) ? (s["f"] as F) : undefined }),
   head: () => ({
     meta: [
       { title: "Sifto — Tasks" },
@@ -91,7 +91,7 @@ function Deck({ deck, i, setI, onDone }: { deck: Item[]; i: number; setI: (n: nu
   const [leaving, setLeaving] = useState(false);
   const start = useRef<number | null>(null);
   const go = (d: number) => setI((i + d + deck.length) % deck.length);
-  const t = deck[i];
+  const t = deck[i]!;
   const C = catStyle[t.cat];
 
   const finish = () => {
@@ -103,7 +103,7 @@ function Deck({ deck, i, setI, onDone }: { deck: Item[]; i: number; setI: (n: nu
     <div className="mt-6">
       <div className="relative h-[400px]">
         {[2, 1].map((o) => deck.length > o && (
-          <div key={o} className={`absolute inset-x-0 top-0 h-[380px] rounded-[28px] ${catStyle[deck[(i + o) % deck.length].cat].bg} shadow-card transition-all duration-300`} style={{ transform: `translateY(${o * 12}px) scale(${1 - o * 0.05})`, opacity: 1 - o * 0.3 }} />
+          <div key={o} className={`absolute inset-x-0 top-0 h-[380px] rounded-[28px] ${catStyle[deck[(i + o) % deck.length]!.cat].bg} shadow-card transition-all duration-300`} style={{ transform: `translateY(${o * 12}px) scale(${1 - o * 0.05})`, opacity: 1 - o * 0.3 }} />
         ))}
         <div
           key={t.id}
