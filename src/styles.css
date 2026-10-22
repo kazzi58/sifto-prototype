@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -42,6 +42,14 @@
   --color-cat-bill-fg: var(--cat-bill-fg);
   --color-note: var(--note);
   --color-note-fg: var(--note-fg);
+  --color-g-apricot: #F3D8BE;
+  --color-g-lavender: #E8E2F1;
+  --color-g-sage: #DDE9DF;
+  --color-g-blue: #E3EDF2;
+  --color-g-sand: #F1E9DB;
+  --animate-check-pop: check-pop 420ms cubic-bezier(.34,1.56,.64,1);
+  --animate-check-draw: check-draw 360ms ease-out 80ms both;
+  --animate-fade-up: fade-up 320ms cubic-bezier(.22,1,.36,1) both;
   --color-urgent: var(--urgent);
   --color-urgent-fg: var(--urgent-fg);
   --shadow-card: 0 1px 2px oklch(0.3 0.02 150 / 0.04), 0 6px 20px -8px oklch(0.3 0.02 150 / 0.10);
@@ -50,26 +58,26 @@
 
 :root {
   --radius: 1rem;
-  --background: oklch(0.977 0.005 130);
-  --foreground: oklch(0.24 0.015 160);
+  --background: #FAF9F5;
+  --foreground: #27332D;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.015 160);
+  --card-foreground: #27332D;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.015 160);
-  --primary: oklch(0.53 0.06 158);
+  --popover-foreground: #27332D;
+  --primary: #315B4C;
   --primary-foreground: oklch(0.99 0.005 130);
-  --primary-soft: oklch(0.94 0.025 155);
+  --primary-soft: #DDE9DF;
   --secondary: oklch(0.955 0.008 130);
   --secondary-foreground: oklch(0.3 0.02 160);
   --muted: oklch(0.95 0.006 130);
-  --muted-foreground: oklch(0.56 0.012 160);
-  --accent: oklch(0.94 0.025 155);
+  --muted-foreground: #778079;
+  --accent: #DDE9DF;
   --accent-foreground: oklch(0.35 0.05 158);
   --destructive: oklch(0.6 0.18 27);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(0.92 0.006 130);
   --input: oklch(0.92 0.006 130);
-  --ring: oklch(0.53 0.06 158);
+  --ring: #315B4C;
   --cat-plant: oklch(0.94 0.04 150);
   --cat-plant-fg: oklch(0.45 0.08 150);
   --cat-grocery: oklch(0.95 0.04 70);
@@ -99,3 +107,7 @@
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
+
+@keyframes check-pop { 0% { transform: scale(.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes check-draw { from { opacity: 0; transform: scale(.4) rotate(-20deg); } to { opacity: 1; transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

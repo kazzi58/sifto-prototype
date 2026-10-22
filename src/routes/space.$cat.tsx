@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronLeft, Pin, Plus, StickyNote, Check } from "lucide-react";
 import { AppShell, catStyle } from "@/components/AppShell";
@@ -10,6 +10,7 @@ const titles: Record<Space, string> = { clean: "Cleaning", grocery: "Groceries",
 
 export const Route = createFileRoute("/space/$cat")({
   loader: ({ params }) => {
+    if (params.cat === "grocery") throw redirect({ to: "/groceries" });
     if (!valid.includes(params.cat as Space)) throw notFound();
     return { cat: params.cat as Space };
   },
