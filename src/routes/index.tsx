@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, ChevronRight, Pin, Plus, StickyNote, CalendarCheck } from "lucide-react";
 import { AppShell, Avatar, catStyle } from "@/components/AppShell";
+import { GroceryTile } from "@/components/GroceryTile";
 import { actions, dateOf, dueLabel, useStore, type Cat } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -88,6 +89,7 @@ function HomeScreen() {
         <div className="grid grid-cols-2 gap-3">
           {tiles.map(({ cat, label }) => {
             const C = catStyle[cat];
+            if (cat === "grocery") return <GroceryTile key={cat} />;
             return (
               <Link key={cat} to="/space/$cat" params={{ cat }} className={`group relative overflow-hidden rounded-3xl ${C.bg} p-4 transition-transform duration-200 active:scale-[0.97]`}>
                 <C.icon className={`absolute -bottom-3 -right-3 h-20 w-20 opacity-[0.12] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110 ${C.fg}`} strokeWidth={1.5} />

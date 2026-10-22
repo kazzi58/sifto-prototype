@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroceriesRouteImport } from './routes/groceries'
 import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as GroceriesHistoryRouteImport } from './routes/groceries_.history'
+import { Route as GroceriesShopRouteImport } from './routes/groceries_.shop'
 import { Route as SpaceCatRouteImport } from './routes/space.$cat'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +21,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroceriesRoute = GroceriesRouteImport.update({
+  id: '/groceries',
+  path: '/groceries',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroceriesHistoryRoute = GroceriesHistoryRouteImport.update({
+  id: '/groceries_/history',
+  path: '/groceries/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroceriesShopRoute = GroceriesShopRouteImport.update({
+  id: '/groceries_/shop',
+  path: '/groceries/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpaceCatRoute = SpaceCatRouteImport.update({
@@ -31,31 +49,62 @@ const SpaceCatRoute = SpaceCatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/groceries': typeof GroceriesRoute
   '/tasks': typeof TasksRoute
+  '/groceries/history': typeof GroceriesHistoryRoute
+  '/groceries/shop': typeof GroceriesShopRoute
   '/space/$cat': typeof SpaceCatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/groceries': typeof GroceriesRoute
   '/tasks': typeof TasksRoute
+  '/groceries/history': typeof GroceriesHistoryRoute
+  '/groceries/shop': typeof GroceriesShopRoute
   '/space/$cat': typeof SpaceCatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/groceries': typeof GroceriesRoute
   '/tasks': typeof TasksRoute
+  '/groceries_/history': typeof GroceriesHistoryRoute
+  '/groceries_/shop': typeof GroceriesShopRoute
   '/space/$cat': typeof SpaceCatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tasks' | '/space/$cat'
+  fullPaths:
+    | '/'
+    | '/groceries'
+    | '/tasks'
+    | '/groceries/history'
+    | '/groceries/shop'
+    | '/space/$cat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tasks' | '/space/$cat'
-  id: '__root__' | '/' | '/tasks' | '/space/$cat'
+  to:
+    | '/'
+    | '/groceries'
+    | '/tasks'
+    | '/groceries/history'
+    | '/groceries/shop'
+    | '/space/$cat'
+  id:
+    | '__root__'
+    | '/'
+    | '/groceries'
+    | '/tasks'
+    | '/groceries_/history'
+    | '/groceries_/shop'
+    | '/space/$cat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GroceriesRoute: typeof GroceriesRoute
   TasksRoute: typeof TasksRoute
+  GroceriesHistoryRoute: typeof GroceriesHistoryRoute
+  GroceriesShopRoute: typeof GroceriesShopRoute
   SpaceCatRoute: typeof SpaceCatRoute
 }
 
@@ -68,11 +117,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groceries': {
+      id: '/groceries'
+      path: '/groceries'
+      fullPath: '/groceries'
+      preLoaderRoute: typeof GroceriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tasks': {
       id: '/tasks'
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groceries_/history': {
+      id: '/groceries_/history'
+      path: '/groceries/history'
+      fullPath: '/groceries/history'
+      preLoaderRoute: typeof GroceriesHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groceries_/shop': {
+      id: '/groceries_/shop'
+      path: '/groceries/shop'
+      fullPath: '/groceries/shop'
+      preLoaderRoute: typeof GroceriesShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/space/$cat': {
@@ -87,7 +157,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GroceriesRoute: GroceriesRoute,
   TasksRoute: TasksRoute,
+  GroceriesHistoryRoute: GroceriesHistoryRoute,
+  GroceriesShopRoute: GroceriesShopRoute,
   SpaceCatRoute: SpaceCatRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,5 +1,6 @@
-import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { hydrateGroceries } from "@/lib/grocery";
 import {
   Leaf, ShoppingBasket, Sparkles, Receipt, Home, ListChecks, List, Users, Plus, X, CheckSquare, StickyNote,
   CalendarDays, Repeat, Check,
@@ -21,6 +22,7 @@ export function Avatar({ l, size = "md" }: { l: Who; size?: "sm" | "md" }) {
 }
 
 export function AppShell({ tab, children }: { tab: "home" | "tasks" | "lists" | "household"; children: ReactNode }) {
+  useEffect(() => hydrateGroceries(), []);
   return (
     <div className="min-h-screen bg-secondary">
       <div className="relative mx-auto min-h-screen max-w-[430px] bg-background">
@@ -45,14 +47,14 @@ function BottomNav({ tab }: { tab: string }) {
             <Plus className="h-7 w-7" />
           </button>
         </div>
-        <Link to="/space/$cat" params={{ cat: "grocery" }} className={cls(tab === "lists")}><List className="h-6 w-6" />Lists</Link>
+        <Link to="/groceries" className={cls(tab === "lists")}><List className="h-6 w-6" />Lists</Link>
         <button className={cls(tab === "household")}><Users className="h-6 w-6" />Household</button>
       </div>
     </nav>
   );
 }
 
-function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+export function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
   return (
     <div className={`fixed inset-0 z-40 ${open ? "pointer-events-auto" : "pointer-events-none"}`}>
       <div onClick={onClose} className={`absolute inset-0 bg-foreground/30 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`} />
@@ -79,6 +81,7 @@ function QuickAdd() {
   const [kind, setKind] = useState<Kind>("task");
   const [due, setDue] = useState<number | null>(null);
   const [who, setWho] = useState<Who>("A");
+  const navigate = useNavigate();
   const close = () => { actions.sheet(false); setText(""); setDue(null); setKind("task"); setWho("A"); };
   const save = () => {
     const t = text.trim();
@@ -105,7 +108,7 @@ function QuickAdd() {
         />
         <div className="no-scrollbar -mx-5 mt-4 flex gap-2 overflow-x-auto px-5">
           {kinds.map(([k, l, I, cls]) => (
-            <button type="button" key={k} onClick={() => setKind(k)} className={`flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-sm font-medium transition-all ${kind === k ? "bg-foreground/5 ring-2 ring-primary" : "bg-background"}`}>
+            <button type="button" key={k} onClick={() => { if (k === "grocery") { close(); navigate({ to: "/groceries", search: { add: true } }); } else setKind(k); }} className={`flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-sm font-medium transition-all ${kind === k ? "bg-foreground/5 ring-2 ring-primary" : "bg-background"}`}>
               <span className={`grid h-7 w-7 place-items-center rounded-full ${cls}`}><I className="h-3.5 w-3.5" /></span>{l}
             </button>
           ))}

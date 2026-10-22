@@ -32,7 +32,6 @@ let state: State = {
     { id: 7, title: "Deep clean bathroom", cat: "clean", due: 4, who: "A", done: false },
     { id: 8, title: "Book boiler service", cat: "task", due: 1, who: "A", note: "Ask for a Saturday slot.", done: false },
     { id: 9, title: "Hoover the stairs", cat: "clean", due: 2, who: "A", done: true },
-    ...["Oat milk", "Sourdough", "Eggs", "Spinach", "Lemons", "Dishwasher tablets", "Coffee beans"].map((t, i) => ({ id: 20 + i, title: t, cat: "grocery" as Cat, due: null, who: (i % 2 ? "S" : "A") as Who, done: false })),
   ],
   notes: [
     { id: 1, text: "Spare keys are in the kitchen drawer", pinned: true, by: "Sam", ago: "2d" },
